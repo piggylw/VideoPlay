@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+class Contorller;
 
 // CVideoClientDlg 对话框
 class CVideoClientDlg : public CDialogEx
@@ -32,11 +32,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
 public:
-	CEdit m_video;
-	CSliderCtrl m_pos;
-	CSliderCtrl m_vol;
-	CEdit m_url;
 	afx_msg void OnBnClickedBtnPlay();
 	CButton m_btn_play;
 	afx_msg void OnBnClickedBtnStop();
@@ -44,4 +41,14 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+
+protected:
+
+	CEdit m_video;
+	CSliderCtrl m_pos;
+	CSliderCtrl m_vol;
+	CEdit m_url;
+	float m_length;
+public:
+	Contorller* m_controller;
 };

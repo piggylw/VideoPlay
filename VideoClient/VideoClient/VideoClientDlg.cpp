@@ -7,6 +7,7 @@
 #include "VideoClient.h"
 #include "VideoClientDlg.h"
 #include "afxdialogex.h"
+#include "Contorller.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,11 +59,14 @@ BOOL CVideoClientDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	m_status = false;
+	m_length = 0.0f;
 	SetTimer(0, 500, NULL);
-	m_pos.SetRange(0, 100);
+	m_pos.SetRange(0, 1);
 	m_vol.SetRange(0, 100);
 	m_vol.SetTic(10);
 	m_vol.SetTicFreq(20);
+	m_controller->SetWnd(m_video.GetSafeHwnd());
+	m_url.SetWindowText(_T("file:///D:\\下载\\test.mov"));
 
 	SetDlgItemText(IDC_STATIC_VOL, _T("100%"));
 
@@ -112,13 +116,18 @@ void CVideoClientDlg::OnBnClickedBtnPlay()
 
 	if (m_status==false)
 	{
+		CString url;
+		m_url.GetWindowText(url);
+		m_controller->SetMedia(m_controller->Unicode2Utf8((LPCTSTR)url));
 		m_btn_play.SetWindowText(_T("暂停"));
 		m_status = true;
+		m_controller->VideoCtrl(CTRL_CMD::EVLC_PALY);
 	}
 	else
 	{
 		m_btn_play.SetWindowText(_T("播放"));
 		m_status = false;
+		m_controller->VideoCtrl(CTRL_CMD::EVLC_PAUSE);
 	}
 }
 
@@ -126,7 +135,9 @@ void CVideoClientDlg::OnBnClickedBtnPlay()
 void CVideoClientDlg::OnBnClickedBtnStop()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	
+	m_btn_play.SetWindowText(_T("播放"));
+	m_status = false;
+	m_controller->VideoCtrl(CTRL_CMD::EVLC_STOP);
 }
 
 
@@ -135,7 +146,22 @@ void CVideoClientDlg::OnTimer(UINT_PTR nIDEvent)
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	if (nIDEvent==0)
 	{
-
+		float pos = m_controller->VideoCtrl(CTRL_CMD::EVLC_GET_POS);
+		if (pos != -1.0f)
+		{
+			if (m_length<=0.0f)
+			{
+				m_length = m_controller->VideoCtrl(CTRL_CMD::EVLC_GET_LENGTH);
+			}
+			if (m_pos.GetRangeMax() <= 1)
+			{
+				m_pos.SetRange(0, (int)m_length);
+			}
+			CString strPos;
+			strPos.Format(_T("%f/%f"), pos*m_length,m_length);
+			SetDlgItemText(IDC_STATIC_TIME,strPos);
+			m_pos.SetPos(int(m_length * pos));
+		}
 	}
 	CDialogEx::OnTimer(nIDEvent);
 }
@@ -154,7 +180,12 @@ void CVideoClientDlg::OnDestroy()
 void CVideoClientDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	if (nSBCode == 5)
+	{
+		CString strVol;
 
+		m_controller->SetPosition((float)nPos/m_length);
+	}
 	CDialogEx::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
@@ -167,6 +198,9 @@ void CVideoClientDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		CString strVol;
 		strVol.Format(_T("%d%%"), 100 - nPos);
 		SetDlgItemText(IDC_STATIC_VOL, strVol);
+		m_controller->SetVolume(100 - nPos);
 	}
 	CDialogEx::OnVScroll(nSBCode, nPos, pScrollBar);
 }
+
+

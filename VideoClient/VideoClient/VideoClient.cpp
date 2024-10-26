@@ -6,6 +6,7 @@
 #include "framework.h"
 #include "VideoClient.h"
 #include "VideoClientDlg.h"
+#include "Contorller.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -77,25 +78,10 @@ BOOL CVideoClientApp::InitInstance()
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
 
-	CVideoClientDlg dlg;
-	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
-	if (nResponse == IDOK)
-	{
-		// TODO: 在此放置处理何时用
-		//  “确定”来关闭对话框的代码
-	}
-	else if (nResponse == IDCANCEL)
-	{
-		// TODO: 在此放置处理何时用
-		//  “取消”来关闭对话框的代码
-	}
-	else if (nResponse == -1)
-	{
-		TRACE(traceAppMsg, 0, "警告: 对话框创建失败，应用程序将意外终止。\n");
-		TRACE(traceAppMsg, 0, "警告: 如果您在对话框上使用 MFC 控件，则无法 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS。\n");
-	}
-
+	Contorller ctrl;
+	ctrl.Init(m_pMainWnd);
+	INT_PTR nResponse =  ctrl.Invoke();
+	
 	// 删除上面创建的 shell 管理器。
 	if (pShellManager != nullptr)
 	{
